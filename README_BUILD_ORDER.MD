@@ -20,17 +20,17 @@ This build order is designed to ship quickly, avoid rewrites, and lock behavior 
 - Server serves the built client locally (production-mode simulation)
 
 
-## Step 0.5 — Env + Config Baseline (FREEZE)
+# Step 0.5 — Env + Config Baseline (FREEZE)
 
-- Add .env.example (no secrets)
+- `.env.example` added for server and client (no secrets)
+- Client API base URL is env-driven
+- Server config supports dev/prod toggles
+- Cookie + CORS baseline established (future auth-ready)
 
-- Decide cookie basics now (dev vs prod toggles)
+**Gate (PASS)**
+- App boots locally with env-driven config
+- No hardcoded URLs in client or server
 
-- Confirm client knows where the API lives (local + prod)
-
-**Gate**
-
-App boots locally with env-driven config (no hardcoded URLs)
 
 ---
 
