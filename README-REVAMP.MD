@@ -1,6 +1,4 @@
 # Beaconry
-formerly known as So-Pals v2 (Conceptual – Pre-Revamp)
-
 
 **Core Philosophy (Locked)**
 The system is designed for authoritative, real-time broadcasts delivered to subscribed audiences, prioritizing clarity, trust, and timeliness over engagement or discussion.

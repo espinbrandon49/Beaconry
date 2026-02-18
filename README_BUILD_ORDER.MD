@@ -31,7 +31,6 @@ This build order is designed to ship quickly, avoid rewrites, and lock behavior 
 - App boots locally with env-driven config
 - No hardcoded URLs in client or server
 
-
 ---
 
 ## Step 1 — Data Layer (MongoDB + Mongoose) (FREEZE)

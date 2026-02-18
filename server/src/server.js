@@ -1,7 +1,7 @@
 const path = require("path");
 const http = require("http");
-const express = require("express");
 const app = require("./app");
+const { connectDB } = require("./config/db");
 
 const PORT = process.env.PORT || 3001;
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -20,8 +20,19 @@ if (NODE_ENV === "production") {
 
 const server = http.createServer(app);
 
-server.listen(PORT, () => {
-  console.log(
-    `[server] listening on http://localhost:${PORT} (env=${NODE_ENV})`,
-  );
-});
+async function start() {
+  try {
+    await connectDB();
+
+    server.listen(PORT, () => {
+      console.log(
+        `[server] listening on http://localhost:${PORT} (env=${NODE_ENV})`
+      );
+    });
+  } catch (err) {
+    console.error("[server] failed to start:", err);
+    process.exit(1);
+  }
+}
+
+start();
