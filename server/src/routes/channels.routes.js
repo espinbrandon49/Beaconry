@@ -1,9 +1,11 @@
 const express = require("express");
 const Channel = require("../models/Channel");
+const requireAuth = require("../middleware/requireAuth");
+const requireBroadcaster = require("../middleware/requireBroadcaster");
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, requireBroadcaster, async (req, res) => {
   try {
     const created = await Channel.create(req.body);
     res.status(201).json(created);
@@ -23,7 +25,7 @@ router.get("/:id", async (req, res) => {
   res.json(channel);
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, requireBroadcaster, async (req, res) => {
   const deleted = await Channel.findByIdAndDelete(req.params.id);
   if (!deleted) return res.status(404).json({ error: "Not found" });
   res.json({ ok: true });

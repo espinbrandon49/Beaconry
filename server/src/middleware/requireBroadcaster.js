@@ -1,0 +1,9 @@
+function requireBroadcaster(req, res, next) {
+  if (req.user.role !== "broadcaster") {
+    return res.status(403).json({ error: "Broadcaster only" });
+  }
+
+  next();
+}
+
+module.exports = requireBroadcaster;

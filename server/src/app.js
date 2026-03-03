@@ -2,7 +2,8 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-const usersRoutes = require("./routes/users.routes");
+const sessionConfig = require("./config/session");
+const authRoutes = require("./routes/auth.routes");
 const channelsRoutes = require("./routes/channels.routes");
 const subscriptionsRoutes = require("./routes/subscriptions.routes");
 const broadcastsRoutes = require("./routes/broadcasts.routes");
@@ -22,6 +23,8 @@ app.use(
   })
 );
 
+app.use(sessionConfig());
+
 // REQUIRED: Health route
 app.get("/api/health", (req, res) => {
   res.json({
@@ -31,7 +34,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // Step 1 CRUD routes (dev-grade)
-app.use("/api/users", usersRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/channels", channelsRoutes);
 app.use("/api/subscriptions", subscriptionsRoutes);
 app.use("/api/broadcasts", broadcastsRoutes);

@@ -1,19 +1,29 @@
 const express = require("express");
 const Subscription = require("../models/Subscription");
+const requireAuth = require("../middleware/requireAuth");
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
-    const created = await Subscription.create(req.body);
+    const { channelId } = req.body;
+
+    const created = await Subscription.create({
+      userId: req.user._id,
+      channelId
+    });
+
     res.status(201).json(created);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-router.get("/", async (_req, res) => {
-  const subs = await Subscription.find().sort({ createdAt: -1 });
+router.get("/mine", requireAuth, async (req, res) => {
+  const subs = await Subscription.find({
+    userId: req.user._id
+  }).sort({ createdAt: -1 });
+
   res.json(subs);
 });
 
@@ -23,8 +33,12 @@ router.get("/:id", async (req, res) => {
   res.json(sub);
 });
 
-router.delete("/:id", async (req, res) => {
-  const deleted = await Subscription.findByIdAndDelete(req.params.id);
+router.delete("/:channelId", requireAuth, async (req, res) => {
+  const deleted = await Subscription.findOneAndDelete({
+    userId: req.user._id,
+    channelId: req.params.channelId
+  });
+
   if (!deleted) return res.status(404).json({ error: "Not found" });
   res.json({ ok: true });
 });
