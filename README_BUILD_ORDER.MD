@@ -79,18 +79,20 @@ This build order is designed to ship quickly, avoid rewrites, and lock behavior 
 
 ## Step 3 — Channels + Subscriptions API (FREEZE)
 
-**Channels**
-- `GET /api/channels` — list all channels
+### Channels
+- `GET /api/channels/mine` — list my subscribed channels
+- `GET /api/channels/:id` — get one channel (broadcaster OR subscribed user; stealth 404)
 - Channels are seeded/admin-created (Version 1 does not require create/edit channel endpoints)
 
-**Subscriptions**
-- `GET /api/subscriptions` — my subscribed channels
-- `POST /api/subscriptions/:channelId` — subscribe
-- `DELETE /api/subscriptions/:channelId` — unsubscribe
+### Subscriptions
+- `GET /api/subscriptions/mine` — my subscriptions
+- `POST /api/subscriptions` — subscribe (body: `{ channelId }`)
+- `DELETE /api/subscriptions/:channelId` — unsubscribe (self only)
 
-**Gate**
-- User can manage subscriptions
-- Returned subscription list is correct
+### Gate
+- User can subscribe/unsubscribe to a channel
+- `/api/subscriptions/mine` reflects changes correctly
+- `/api/channels/mine` matches the user’s subscriptions
 
 ---
 
@@ -103,7 +105,7 @@ Subscribers cannot edit or delete.
 This supports operational correction in time-sensitive environments.
 
 **Endpoints**
-- `GET /api/broadcasts` — subscription-scoped feed
+- `GET /api/broadcasts/feed` — subscription-scoped feed
 - `POST /api/broadcasts` — broadcaster-only
 - `PATCH /api/broadcasts/:id` — broadcaster-only
 - `DELETE /api/broadcasts/:id` — broadcaster-only
@@ -111,7 +113,7 @@ This supports operational correction in time-sensitive environments.
 **Rules**
 - Subscribers see only broadcasts from subscribed channels
 - Broadcasters can publish to any channel
-- Edit/delete rule is fixed and enforced (author-only or broadcaster-only)
+- Edit/delete authority is broadcaster-only (global), not author-scoped.
 
 **Gate**
 - Feed is correctly scoped
@@ -121,64 +123,78 @@ This supports operational correction in time-sensitive environments.
 
 ## Step 5 — Real-Time Delivery (Socket.io) (FREEZE)
 
-**Behavior**
-- Socket connects after authentication
-- Client joins subscription-scoped rooms (or server computes rooms)
-- On broadcast create/update/delete, server emits to channel room
+### Behavior
+- Socket connection requires valid session authentication
+- Server derives channel room membership from DB subscriptions (client does not declare rooms)
+- Each channel maps to a channel room
+- On broadcast create/update/delete, server emits to the appropriate channel room
+- No global broadcast room exists
 
-**Gate**
-- One client publishes
-- Other subscribed clients receive updates instantly without refresh
+### Gate
+- One broadcaster publishes/edits/deletes a broadcast
+- Subscribed clients receive updates instantly without refresh
+- Unsubscribed clients receive nothing
 
 ---
 
 ## Step 6 — UI Pass (React) (FREEZE)
 
-**Pages**
+### Pages
 - Login / Signup
-- Channel directory with subscribe toggles
-- Subscription-scoped feed
-- Broadcaster compose panel (only if `isBroadcaster`)
+- Invite page (`/invite/:slug`) with subscribe action
+- Subscription-scoped feed (merged broadcasts from subscribed channels)
+- Broadcaster compose panel (visible only if `isBroadcaster = true`)
 
-**Requirements**
+### Requirements
 - Loading states
-- Empty states
+- Empty states (e.g., “No subscriptions yet” / “No broadcasts yet”)
 - Error states
 - No blank screens
+- No global channel browsing
 
-**Gate**
+### Gate
+- User can sign up and log in
+- User can subscribe via invite link
+- Feed reflects subscribed channels only
+- Broadcaster can create/update/delete broadcasts
+- Real-time updates function correctly
 - Full demo flow works end-to-end
 
 ---
 
 ## Step 7 — Deployment Hardening (FREEZE)
 
-**Environment Variables**
+### Environment Variables
 - `MONGODB_URI`
 - `SESSION_SECRET`
+- `NODE_ENV=production`
 
-**Checks**
-- Secure production cookies
-- Correct `sameSite` settings
-- Client build served by Express
-- Socket.io functions in production
-- Confirm WebSocket transport works in production (no “polling-only surprise”)
-- Confirm cookie/session identity is available in socket handshake
+### Checks
+- Secure cookies enabled in production (`secure: true`)
+- Correct `sameSite` settings for production deployment
+- Session store uses production MongoDB instance
+- Client build is served by Express in production
+- Socket.io functions in production environment
+- WebSocket transport confirmed (not unintentionally falling back to polling)
+- Session cookie is available during Socket.io handshake
+- Server remains authoritative for identity and role checks
 
-**Gate**
+### Gate
 - Production behavior matches local development
+- Authentication persists across refresh
+- Real-time updates function correctly in production
 
 ---
 
 ## Portfolio Demo Flow
 
 1. Sign up as a subscriber  
-2. Subscribe to multiple channels  
+2. Subscribe to multiple channels via invite links  
 3. Log in as a broadcaster  
 4. Publish a broadcast to a channel  
-5. Subscriber feed updates instantly  
+5. Subscriber feed updates instantly (real-time delivery)  
 6. Unsubscribe from a channel  
-7. Future broadcasts from that channel no longer appear
+7. Future broadcasts from that channel no longer appear in the feed
 
 
 **Core Philosophy (Locked)**
@@ -188,6 +204,6 @@ The system is designed for authoritative, real-time broadcasts delivered to subs
 
 Beaconry is a real-time broadcast system purpose-built for school districts.
 
-It enables trusted district and school staff to publish authoritative, one-way announcements to predefined channels, while district staff and approved community members (e.g., parents/students) receive only the updates they explicitly subscribe to.
+It enables trusted district and school staff to publish authoritative, one-way announcements to predefined channels, while district staff and approved community members (e.g., parents/students) receive only the updates they explicitly subscribe to (via invite/onboarding).
 
 Beaconry intentionally avoids public feeds and discussion features in favor of clarity, trust, and timely delivery.

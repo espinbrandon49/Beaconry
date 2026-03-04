@@ -6,24 +6,23 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
       lowercase: true,
-      trim: true,
+      trim: true
     },
     name: {
       type: String,
       trim: true,
-      default: "",
+      default: ""
     },
-    role: {
+    isBroadcaster: {
+      type: Boolean,
+      default: false
+    },
+    passwordHash: {
       type: String,
-      enum: ["subscriber", "broadcaster"],
-      default: "subscriber",
-    },
-    password: {
-      type: String,
-      required: true,
-    },
+      required: true
+    }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 // Index: Users unique email

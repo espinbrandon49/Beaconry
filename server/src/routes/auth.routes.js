@@ -9,12 +9,12 @@ router.post("/signup", async (req, res) => {
   try {
     const { email, name, password } = req.body;
 
-    const hashed = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       email,
       name,
-      password: hashed
+      passwordHash
     });
 
     req.session.userId = user._id;
@@ -23,7 +23,7 @@ router.post("/signup", async (req, res) => {
       id: user._id,
       email: user.email,
       name: user.name,
-      role: user.role
+      isBroadcaster: user.isBroadcaster
     });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -37,7 +37,7 @@ router.post("/login", async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
-  const valid = await bcrypt.compare(password, user.password);
+  const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) return res.status(401).json({ error: "Invalid credentials" });
 
   req.session.userId = user._id;
@@ -46,7 +46,7 @@ router.post("/login", async (req, res) => {
     id: user._id,
     email: user.email,
     name: user.name,
-    role: user.role
+    isBroadcaster: user.isBroadcaster
   });
 });
 
@@ -70,7 +70,7 @@ router.get("/me", async (req, res) => {
     id: user._id,
     email: user.email,
     name: user.name,
-    role: user.role
+    isBroadcaster: user.isBroadcaster
   });
 });
 

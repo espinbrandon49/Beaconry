@@ -27,12 +27,6 @@ router.get("/mine", requireAuth, async (req, res) => {
   res.json(subs);
 });
 
-router.get("/:id", async (req, res) => {
-  const sub = await Subscription.findById(req.params.id);
-  if (!sub) return res.status(404).json({ error: "Not found" });
-  res.json(sub);
-});
-
 router.delete("/:channelId", requireAuth, async (req, res) => {
   const deleted = await Subscription.findOneAndDelete({
     userId: req.user._id,

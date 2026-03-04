@@ -9,11 +9,11 @@ const router = express.Router();
 // CREATE (broadcaster-only, authorId is server-derived)
 router.post("/", requireAuth, requireBroadcaster, async (req, res) => {
   try {
-    const { channelId, body } = req.body;
+    const { channelId, content } = req.body;
 
     const created = await Broadcast.create({
       channelId,
-      body,
+      content,
       authorId: req.user._id
     });
 
@@ -38,14 +38,45 @@ router.get("/feed", requireAuth, async (req, res) => {
   res.json(broadcasts);
 });
 
-// GET ONE
+// GET ONE: broadcaster OR subscribed-to-channel user only (stealth 404)
 router.get("/:id", requireAuth, async (req, res) => {
   const broadcast = await Broadcast.findById(req.params.id);
   if (!broadcast) return res.status(404).json({ error: "Not found" });
+
+  if (req.user.isBroadcaster) {
+    return res.json(broadcast);
+  }
+
+  const sub = await Subscription.findOne({
+    userId: req.user._id,
+    channelId: broadcast.channelId
+  });
+
+  if (!sub) return res.status(404).json({ error: "Not found" });
+
   res.json(broadcast);
 });
 
-// DELETE
+// PATCH (broadcaster-only, global edit authority)
+router.patch("/:id", requireAuth, requireBroadcaster, async (req, res) => {
+  try {
+    const { content } = req.body;
+
+    const updated = await Broadcast.findByIdAndUpdate(
+      req.params.id,
+      { content },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) return res.status(404).json({ error: "Not found" });
+
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// DELETE (broadcaster-only)
 router.delete("/:id", requireAuth, requireBroadcaster, async (req, res) => {
   const deleted = await Broadcast.findByIdAndDelete(req.params.id);
   if (!deleted) return res.status(404).json({ error: "Not found" });

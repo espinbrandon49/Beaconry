@@ -5,26 +5,25 @@ const BroadcastSchema = new mongoose.Schema(
     channelId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Channel",
-      required: true,
-      index: true
+      required: true
     },
     authorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-      index: true
+      required: true
     },
-    body: {
+    content: {
       type: String,
       required: true,
       trim: true,
-      maxlength: 200
+      maxlength: 1000
     }
   },
   { timestamps: true }
 );
 
-// Index: Broadcasts (channelId, createdAt DESC)
+// Fast feed: per-channel time-ordered reads
 BroadcastSchema.index({ channelId: 1, createdAt: -1 });
+BroadcastSchema.index({ authorId: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Broadcast", BroadcastSchema);

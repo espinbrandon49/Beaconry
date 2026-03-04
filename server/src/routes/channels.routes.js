@@ -1,34 +1,45 @@
 const express = require("express");
 const Channel = require("../models/Channel");
+const Subscription = require("../models/Subscription");
 const requireAuth = require("../middleware/requireAuth");
-const requireBroadcaster = require("../middleware/requireBroadcaster");
 
 const router = express.Router();
 
-router.post("/", requireAuth, requireBroadcaster, async (req, res) => {
-  try {
-    const created = await Channel.create(req.body);
-    res.status(201).json(created);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+// LIST my channels (subscriber view)
+router.get("/mine", requireAuth, async (req, res) => {
+  const subs = await Subscription.find({ userId: req.user._id }).select(
+    "channelId"
+  );
 
-router.get("/", async (_req, res) => {
-  const channels = await Channel.find().sort({ createdAt: -1 });
+  const channelIds = subs.map((s) => s.channelId);
+
+  const channels = await Channel.find({ _id: { $in: channelIds } }).sort({
+    createdAt: -1
+  });
+
   res.json(channels);
 });
 
-router.get("/:id", async (req, res) => {
+// GET ONE: broadcaster OR subscribed user only (stealth 404)
+router.get("/:id", requireAuth, async (req, res) => {
+  // Broadcasters can fetch any channel
+  if (req.user.isBroadcaster) {
+    const channel = await Channel.findById(req.params.id);
+    if (!channel) return res.status(404).json({ error: "Not found" });
+    return res.json(channel);
+  }
+
+  // Subscribers must be subscribed to fetch the channel
+  const sub = await Subscription.findOne({
+    userId: req.user._id,
+    channelId: req.params.id
+  });
+
+  if (!sub) return res.status(404).json({ error: "Not found" });
+
   const channel = await Channel.findById(req.params.id);
   if (!channel) return res.status(404).json({ error: "Not found" });
   res.json(channel);
-});
-
-router.delete("/:id", requireAuth, requireBroadcaster, async (req, res) => {
-  const deleted = await Channel.findByIdAndDelete(req.params.id);
-  if (!deleted) return res.status(404).json({ error: "Not found" });
-  res.json({ ok: true });
 });
 
 module.exports = router;
