@@ -11,11 +11,20 @@ router.post("/", requireAuth, requireBroadcaster, async (req, res) => {
   try {
     const { channelId, content } = req.body;
 
+    if (!channelId || !content) {
+      return res.status(400).json({ error: "channelId and content required" });
+    }
+    
     const created = await Broadcast.create({
       channelId,
       content,
-      authorId: req.user._id
+      authorId: req.user._id,
     });
+
+    req.app
+      .get("io")
+      .to(`channel:${channelId}`)
+      .emit("broadcast:create", created);
 
     res.status(201).json(created);
   } catch (err) {
@@ -26,7 +35,7 @@ router.post("/", requireAuth, requireBroadcaster, async (req, res) => {
 // FEED (auth-only): broadcasts from channels I'm subscribed to
 router.get("/feed", requireAuth, async (req, res) => {
   const subs = await Subscription.find({ userId: req.user._id }).select(
-    "channelId"
+    "channelId",
   );
 
   const channelIds = subs.map((s) => s.channelId);
@@ -49,7 +58,7 @@ router.get("/:id", requireAuth, async (req, res) => {
 
   const sub = await Subscription.findOne({
     userId: req.user._id,
-    channelId: broadcast.channelId
+    channelId: broadcast.channelId,
   });
 
   if (!sub) return res.status(404).json({ error: "Not found" });
@@ -65,10 +74,15 @@ router.patch("/:id", requireAuth, requireBroadcaster, async (req, res) => {
     const updated = await Broadcast.findByIdAndUpdate(
       req.params.id,
       { content },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updated) return res.status(404).json({ error: "Not found" });
+
+    req.app
+      .get("io")
+      .to(`channel:${updated.channelId}`)
+      .emit("broadcast:update", updated);
 
     res.json(updated);
   } catch (err) {
@@ -79,7 +93,14 @@ router.patch("/:id", requireAuth, requireBroadcaster, async (req, res) => {
 // DELETE (broadcaster-only)
 router.delete("/:id", requireAuth, requireBroadcaster, async (req, res) => {
   const deleted = await Broadcast.findByIdAndDelete(req.params.id);
+
   if (!deleted) return res.status(404).json({ error: "Not found" });
+
+  req.app
+    .get("io")
+    .to(`channel:${deleted.channelId}`)
+    .emit("broadcast:delete", { id: deleted._id });
+
   res.json({ ok: true });
 });
 
