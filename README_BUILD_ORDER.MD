@@ -139,26 +139,83 @@ This supports operational correction in time-sensitive environments.
 
 ## Step 6 — UI Pass (React) (FREEZE)
 
+### Styling Baseline
+Before building pages:
+
+- Install TailwindCSS
+- Configure `index.css`
+- Create UI primitives:
+  - `Button`
+  - `Card`
+  - `Badge`
+- Establish the app frame:
+  - Header
+  - Centered container (`max-w-*`)
+  - Consistent spacing
+
+These primitives must be used by all UI components.
+
+---
+
 ### Pages
 - Login / Signup
 - Invite page (`/invite/:slug`) with subscribe action
 - Subscription-scoped feed (merged broadcasts from subscribed channels)
 - Broadcaster compose panel (visible only if `isBroadcaster = true`)
 
-### Requirements
+---
+
+### Components
+- `BroadcastItem`
+- `ChannelList`
+- `BroadcasterPanel`
+
+Components must use the shared UI primitives.
+
+---
+
+### UI Requirements
 - Loading states
-- Empty states (e.g., “No subscriptions yet” / “No broadcasts yet”)
+- Empty states  
+  - “No subscriptions yet”
+  - “No broadcasts yet”
 - Error states
 - No blank screens
 - No global channel browsing
 
+---
+
+### Styling Principles (Locked)
+
+Beaconry should look like a **district information portal**, not a social network.
+
+Design traits:
+
+- calm
+- clean
+- authoritative
+- readable
+- distraction-free
+
+Broadcast cards must show:
+
+- channel
+- timestamp
+- content
+
+No reactions, comments, or engagement features.
+
+---
+
 ### Gate
+
 - User can sign up and log in
 - User can subscribe via invite link
 - Feed reflects subscribed channels only
 - Broadcaster can create/update/delete broadcasts
 - Real-time updates function correctly
 - Full demo flow works end-to-end
+- Layout is readable on mobile and desktop
 
 ---
 

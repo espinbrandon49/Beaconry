@@ -14,17 +14,14 @@ router.post("/", requireAuth, requireBroadcaster, async (req, res) => {
     if (!channelId || !content) {
       return res.status(400).json({ error: "channelId and content required" });
     }
-    
+
     const created = await Broadcast.create({
       channelId,
       content,
       authorId: req.user._id,
     });
 
-    req.app
-      .get("io")
-      .to(`channel:${channelId}`)
-      .emit("broadcast:create", created);
+    req.app.get("io").to(`channel:${channelId}`).emit("broadcast:create", created);
 
     res.status(201).json(created);
   } catch (err) {
@@ -33,18 +30,43 @@ router.post("/", requireAuth, requireBroadcaster, async (req, res) => {
 });
 
 // FEED (auth-only): broadcasts from channels I'm subscribed to
+// Optional: ?since=<ISO timestamp> to fetch only broadcasts newer than that time
 router.get("/feed", requireAuth, async (req, res) => {
-  const subs = await Subscription.find({ userId: req.user._id }).select(
-    "channelId",
-  );
+  try {
+    const subs = await Subscription.find({ userId: req.user._id }).select(
+      "channelId",
+    );
 
-  const channelIds = subs.map((s) => s.channelId);
+    const channelIds = subs.map((s) => s.channelId);
 
-  const broadcasts = await Broadcast.find({ channelId: { $in: channelIds } })
-    .sort({ createdAt: -1 })
-    .limit(200);
+    if (channelIds.length === 0) {
+      return res.json([]);
+    }
 
-  res.json(broadcasts);
+    const { since } = req.query;
+
+    let sinceDate = null;
+    if (since) {
+      const d = new Date(since);
+      if (Number.isNaN(d.getTime())) {
+        return res.status(400).json({ error: "Invalid since parameter" });
+      }
+      sinceDate = d;
+    }
+
+    const query = {
+      channelId: { $in: channelIds },
+      ...(sinceDate ? { createdAt: { $gt: sinceDate } } : {}),
+    };
+
+    const broadcasts = await Broadcast.find(query)
+      .sort({ createdAt: -1 })
+      .limit(200);
+
+    res.json(broadcasts);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // GET ONE: broadcaster OR subscribed-to-channel user only (stealth 404)

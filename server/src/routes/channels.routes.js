@@ -42,4 +42,11 @@ router.get("/:id", requireAuth, async (req, res) => {
   res.json(channel);
 });
 
+// INVITE LOOKUP: auth-only by slug
+router.get("/slug/:slug", requireAuth, async (req, res) => {
+  const channel = await Channel.findOne({ slug: req.params.slug });
+  if (!channel) return res.status(404).json({ error: "Not found" });
+  res.json(channel);
+});
+
 module.exports = router;
