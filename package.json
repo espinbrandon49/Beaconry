@@ -2,7 +2,7 @@
   "name": "beaconry",
   "private": true,
   "scripts": {
-    "build": "npm install --prefix client && npm run build --prefix client",
+    "build": "npm install --prefix server && npm install --prefix client && npm run build --prefix client",
     "start": "node server/src/server.js",
     "heroku-postbuild": "npm run build"
   },
