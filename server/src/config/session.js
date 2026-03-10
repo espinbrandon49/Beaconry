@@ -4,7 +4,7 @@ const MongoStore = require("connect-mongo").default;
 function sessionConfig() {
   return session({
     name: "beaconry.sid",
-    secret: process.env.SESSION_SECRET || "dev-secret",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({

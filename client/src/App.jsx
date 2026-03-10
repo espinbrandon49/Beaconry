@@ -50,7 +50,10 @@ export default function App() {
 
             {!loading && user && (
               <nav className="flex items-center gap-3 text-sm">
-                <Link className="text-slate-700 hover:text-slate-900" to="/feed">
+                <Link
+                  className="text-slate-700 hover:text-slate-900"
+                  to="/feed"
+                >
                   Feed
                 </Link>
                 <Link
@@ -66,7 +69,10 @@ export default function App() {
           <div className="flex items-center gap-3">
             {!loading && !user && (
               <div className="flex items-center gap-3 text-sm">
-                <Link className="text-slate-700 hover:text-slate-900" to="/login">
+                <Link
+                  className="text-slate-700 hover:text-slate-900"
+                  to="/login"
+                >
                   Login
                 </Link>
                 <Link

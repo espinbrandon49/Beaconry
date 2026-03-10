@@ -1,5 +1,5 @@
 const API_BASE =
-  import.meta.env.VITE_API_URL?.trim() || "http://localhost:3001";
+  import.meta.env.VITE_API_URL?.trim() || "";
 
 async function parseJsonSafe(res) {
   const text = await res.text();

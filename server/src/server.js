@@ -24,9 +24,15 @@ if (NODE_ENV === "production") {
 const server = http.createServer(app);
 
 // Create Socket.io server
+const SOCKET_ORIGIN = process.env.CORS_ORIGIN;
+
+if (!SOCKET_ORIGIN) {
+  throw new Error("CORS_ORIGIN must be set for Socket.io");
+}
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    origin: SOCKET_ORIGIN,
     credentials: true
   }
 });

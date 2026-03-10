@@ -13,8 +13,12 @@ const app = express();
 app.use(express.json());
 
 // CORS baseline (cookie-ready)
-const ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+const ORIGIN = process.env.CORS_ORIGIN;
 const CREDENTIALS = String(process.env.CORS_CREDENTIALS || "true") === "true";
+
+if (!ORIGIN) {
+  throw new Error("CORS_ORIGIN must be set in environment variables");
+}
 
 app.use(
   cors({

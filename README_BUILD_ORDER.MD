@@ -219,27 +219,11 @@ No reactions, comments, or engagement features.
 
 ---
 
-## Step 7 — Deployment Hardening (FREEZE)
+## Step 7 — Real Deployment Verification (FREEZE)
 
-### Environment Variables
-- `MONGODB_URI`
-- `SESSION_SECRET`
-- `NODE_ENV=production`
+see separate deployment file
 
-### Checks
-- Secure cookies enabled in production (`secure: true`)
-- Correct `sameSite` settings for production deployment
-- Session store uses production MongoDB instance
-- Client build is served by Express in production
-- Socket.io functions in production environment
-- WebSocket transport confirmed (not unintentionally falling back to polling)
-- Session cookie is available during Socket.io handshake
-- Server remains authoritative for identity and role checks
-
-### Gate
-- Production behavior matches local development
-- Authentication persists across refresh
-- Real-time updates function correctly in production
+---
 
 ---
 
