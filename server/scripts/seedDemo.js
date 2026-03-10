@@ -130,3 +130,8 @@ seed().catch(async (err) => {
   await mongoose.disconnect();
   process.exit(1);
 });
+
+// INVITES
+// https://beaconry-5423965f3fe8.herokuapp.com/invite/district-alerts
+// https://beaconry-5423965f3fe8.herokuapp.com/invite/transportation
+// https://beaconry-5423965f3fe8.herokuapp.com/invite/athletics
