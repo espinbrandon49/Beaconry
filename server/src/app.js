@@ -9,6 +9,7 @@ const subscriptionsRoutes = require("./routes/subscriptions.routes");
 const broadcastsRoutes = require("./routes/broadcasts.routes");
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(express.json());
 
