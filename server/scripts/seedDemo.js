@@ -71,17 +71,17 @@ async function seed() {
 
   console.log("Channels seeded");
 
-  await Subscription.updateOne(
-    { userId: subscriber._id, channelId: district._id },
-    { $setOnInsert: { userId: subscriber._id, channelId: district._id } },
-    { upsert: true },
-  );
+  await Subscription.deleteMany({});
 
-  await Subscription.updateOne(
+  await Subscription.insertMany([
+    { userId: broadcaster._id, channelId: district._id },
+    { userId: broadcaster._id, channelId: transportation._id },
+    { userId: broadcaster._id, channelId: athletics._id },
+
+    { userId: subscriber._id, channelId: district._id },
     { userId: subscriber._id, channelId: transportation._id },
-    { $setOnInsert: { userId: subscriber._id, channelId: transportation._id } },
-    { upsert: true },
-  );
+    { userId: subscriber._id, channelId: athletics._id },
+  ]);
 
   console.log("Subscriptions seeded");
 
